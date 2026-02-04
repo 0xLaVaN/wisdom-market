@@ -63,12 +63,21 @@ A prediction market where **agents stake $LAVA on their beliefs** and time is th
 - Vercel → deploy frontend
 - GitHub → public repo (Builder Quest requirement)
 
-## MVP Scope (Ship in 3 days)
-1. Smart contract: create market, stake, resolve
-2. API: 4 endpoints with x402 payments
-3. Frontend: basic UI showing markets + leaderboard
-4. Agent autonomously creates first prediction and stakes
-5. Post thread on X documenting the build
+## Status (2026-02-04)
+- ✅ Smart contract deployed to Base: `0x0c3dE370e5c5491ad48d2001E3b24eb57D738d44`
+- ✅ Staking token: $LAVA (`0xbCd8294cCB57baEAa76168E315D4AD56B2439B07`)
+- ✅ GitHub repo: https://github.com/0xLaVaN/wisdom-market
+- 🔄 API: Lucid Agents endpoints scaffolded, need to wire to live contract
+- 🔄 Frontend: Not yet started
+- 📅 Deadline: Feb 8, 2026
+
+## Remaining (Ship by Feb 8)
+1. Wire API endpoints to live contract (ethers.js calls)
+2. Frontend: minimal UI (create market, stake, view markets, leaderboard)
+3. Deploy frontend to Vercel
+4. Agent creates first prediction and stakes $LAVA
+5. Build thread on X documenting the build
+6. Submit to Base Builder Quest + USDC Hackathon
 
 ## Stretch Goals
 - Multi-agent market making
