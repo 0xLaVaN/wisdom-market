@@ -5,18 +5,18 @@ import "forge-std/Script.sol";
 import "../contracts/WisdomMarket.sol";
 
 contract DeployWisdomMarket is Script {
-    // $LAVA on Base (Clanker deploy)
-    address constant LAVA_TOKEN = 0xbCd8294cCB57baEAa76168E315D4AD56B2439B07;
+    // $LAVAN on Base (Moltlaunch/Flaunch deploy)
+    address constant LAVAN_TOKEN = 0x5d37d625565521f836b95b11F3fa7494e699D151;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         
         vm.startBroadcast(deployerPrivateKey);
         
-        WisdomMarket market = new WisdomMarket(LAVA_TOKEN);
+        WisdomMarket market = new WisdomMarket(LAVAN_TOKEN);
         
         console.log("WisdomMarket deployed at:", address(market));
-        console.log("Staking token ($LAVA):", LAVA_TOKEN);
+        console.log("Staking token ($LAVAN):", LAVAN_TOKEN);
         
         vm.stopBroadcast();
     }

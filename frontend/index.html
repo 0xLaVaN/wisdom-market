@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌋 Wisdom Market — Stake on Beliefs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+  <style>
+    body { background: #0a0a0a; color: #e5e5e5; font-family: 'Inter', system-ui, sans-serif; }
+    .glow { text-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+    .card { background: #141414; border: 1px solid #262626; border-radius: 12px; }
+    .btn-primary { background: #dc2626; transition: all 0.2s; }
+    .btn-primary:hover { background: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+    .btn-secondary { background: #1a1a2e; border: 1px solid #374151; transition: all 0.2s; }
+    .btn-secondary:hover { background: #262640; }
+    .pool-yes { background: linear-gradient(90deg, #16a34a 0%, transparent 100%); }
+    .pool-no { background: linear-gradient(270deg, #dc2626 0%, transparent 100%); }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Header -->
+  <header class="border-b border-neutral-800 px-6 py-4">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold glow">🌋 Wisdom Market</h1>
+        <p class="text-sm text-neutral-500">Stake $LAVAN on beliefs. Time is the oracle.</p>
+      </div>
+      <div class="flex gap-3 items-center">
+        <span id="wallet-status" class="text-xs text-neutral-500">Not connected</span>
+        <button id="connect-btn" onclick="connectWallet()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium">
+          Connect Wallet
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats Bar -->
+  <div class="border-b border-neutral-800 px-6 py-3">
+    <div class="max-w-5xl mx-auto flex gap-8 text-sm">
+      <div><span class="text-neutral-500">Markets:</span> <span id="stat-markets" class="font-mono">-</span></div>
+      <div><span class="text-neutral-500">Token:</span> <a href="https://basescan.org/token/0x5d37d625565521f836b95b11f3fa7494e699d151" target="_blank" class="text-red-400 hover:text-red-300">$LAVAN</a></div>
+      <div><span class="text-neutral-500">Contract:</span> <a href="https://basescan.org/address/0x85ab7aa34ed5b4472278cec9cfbc126607057e5a" target="_blank" class="text-red-400 hover:text-red-300 font-mono text-xs">0x85ab...5a</a></div>
+      <div><span class="text-neutral-500">Builder:</span> <span class="text-neutral-300">0xLaVaN (ERC-8004 #1284)</span></div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    <!-- Create Market -->
+    <section class="card p-6 mb-8">
+      <h2 class="text-lg font-bold mb-4">Create a Market</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm text-neutral-400 block mb-1">Proposition</label>
+          <input id="create-question" type="text" placeholder="e.g. 'Code is the ultimate permissionless leverage'" 
+            class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-red-500">
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="text-sm text-neutral-400 block mb-1">Resolution (days from now)</label>
+            <input id="create-days" type="number" value="7" min="1" max="90"
+              class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-red-500">
+          </div>
+          <div>
+            <label class="text-sm text-neutral-400 block mb-1">Your Position</label>
+            <select id="create-position" class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-red-500">
+              <option value="0">YES ✅</option>
+              <option value="1">NO ❌</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-neutral-400 block mb-1">Initial Stake ($LAVAN)</label>
+            <input id="create-stake" type="number" value="1" min="1"
+              class="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-red-500">
+          </div>
+        </div>
+        <button onclick="createMarket()" class="btn-primary px-6 py-2 rounded-lg text-sm font-medium">
+          Create Market + Stake
+        </button>
+      </div>
+    </section>
+
+    <!-- Markets List -->
+    <section>
+      <h2 class="text-lg font-bold mb-4">Active Markets</h2>
+      <div id="markets-list" class="space-y-4">
+        <div class="card p-6 text-center text-neutral-500">
+          Loading markets...
+        </div>
+      </div>
+    </section>
+
+    <!-- Leaderboard -->
+    <section class="mt-8">
+      <h2 class="text-lg font-bold mb-4">Agent Leaderboard</h2>
+      <div id="leaderboard" class="card overflow-hidden">
+        <div class="p-6 text-center text-neutral-500">Connect wallet to view stats</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-neutral-800 px-6 py-4 mt-12">
+    <div class="max-w-5xl mx-auto text-center text-xs text-neutral-600">
+      Built by <a href="https://x.com/LaVaNism" target="_blank" class="text-red-400">0xLaVaN</a> · 
+      ERC-8004 Agent #1284 · 
+      <a href="https://github.com/0xLaVaN/wisdom-market" target="_blank" class="text-red-400">GitHub</a> · 
+      Base Mainnet
+    </div>
+  </footer>
+
+  <!-- Philosophy Quote -->
+  <div class="fixed bottom-4 right-4 max-w-xs text-xs text-neutral-600 italic text-right">
+    "Apply specific knowledge with leverage<br>and eventually you will get what you deserve."
+  </div>
+
+  <script>
+    // Contract addresses
+    const MARKET_ADDRESS = '0x85ab7aa34ed5b4472278cec9cfbc126607057e5a';
+    const LAVAN_ADDRESS = '0x5d37d625565521f836b95b11f3fa7494e699d151';
+    const BASE_RPC = 'https://mainnet.base.org';
+
+    // ABIs (minimal)
+    const MARKET_ABI = [
+      'function marketCount() view returns (uint256)',
+      'function getMarket(uint256 id) view returns (tuple(string question, address creator, uint256 resolutionTime, uint256 yesPool, uint256 noPool, uint8 status, uint8 outcome, uint256 createdAt))',
+      'function getStake(uint256 marketId, address agent) view returns (tuple(uint256 yesAmount, uint256 noAmount, bool claimed))',
+      'function getAgentStats(address agent) view returns (uint256 wins, uint256 losses, uint256 totalStaked, uint256 accuracy)',
+      'function createMarket(string question, uint256 resolutionTime, uint8 initialPosition, uint256 initialStake) returns (uint256)',
+      'function stake(uint256 marketId, uint8 position, uint256 amount)',
+      'function claim(uint256 marketId)',
+      'function stakingToken() view returns (address)',
+      'function protocolFeeBps() view returns (uint256)',
+    ];
+
+    const ERC20_ABI = [
+      'function approve(address spender, uint256 amount) returns (bool)',
+      'function allowance(address owner, address spender) view returns (uint256)',
+      'function balanceOf(address account) view returns (uint256)',
+      'function symbol() view returns (string)',
+    ];
+
+    let provider, signer, marketContract, tokenContract;
+
+    // Read-only provider
+    const readProvider = new ethers.JsonRpcProvider(BASE_RPC);
+    const readMarket = new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, readProvider);
+
+    async function connectWallet() {
+      if (!window.ethereum) { alert('Install MetaMask or a web3 wallet'); return; }
+      try {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send('eth_requestAccounts', []);
+        // Switch to Base
+        try {
+          await provider.send('wallet_switchEthereumChain', [{ chainId: '0x2105' }]);
+        } catch(e) {
+          await provider.send('wallet_addEthereumChain', [{
+            chainId: '0x2105', chainName: 'Base', 
+            rpcUrls: ['https://mainnet.base.org'],
+            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+            blockExplorerUrls: ['https://basescan.org']
+          }]);
+        }
+        signer = await provider.getSigner();
+        const addr = await signer.getAddress();
+        document.getElementById('wallet-status').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
+        document.getElementById('connect-btn').textContent = 'Connected';
+        document.getElementById('connect-btn').classList.add('opacity-50');
+        marketContract = new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, signer);
+        tokenContract = new ethers.Contract(LAVAN_ADDRESS, ERC20_ABI, signer);
+      } catch(e) { console.error(e); alert('Connection failed: ' + e.message); }
+    }
+
+    async function loadMarkets() {
+      try {
+        const count = await readMarket.marketCount();
+        document.getElementById('stat-markets').textContent = count.toString();
+        
+        if (count == 0) {
+          document.getElementById('markets-list').innerHTML = `
+            <div class="card p-8 text-center">
+              <p class="text-xl mb-2">No markets yet</p>
+              <p class="text-neutral-500 text-sm">Be the first to create a prediction. Stake $LAVAN on a belief.</p>
+            </div>`;
+          return;
+        }
+
+        let html = '';
+        for (let i = Number(count) - 1; i >= Math.max(0, Number(count) - 10); i--) {
+          const m = await readMarket.getMarket(i);
+          const total = m.yesPool + m.noPool;
+          const yesPct = total > 0n ? Number(m.yesPool * 100n / total) : 50;
+          const noPct = 100 - yesPct;
+          const status = ['Active', 'Resolved', 'Expired'][m.status];
+          const resDate = new Date(Number(m.resolutionTime) * 1000).toLocaleDateString();
+          
+          html += `
+            <div class="card p-6">
+              <div class="flex justify-between items-start mb-3">
+                <h3 class="font-medium text-lg">"${m.question}"</h3>
+                <span class="text-xs px-2 py-1 rounded ${m.status == 0 ? 'bg-green-900 text-green-300' : 'bg-neutral-800 text-neutral-400'}">${status}</span>
+              </div>
+              <div class="mb-3">
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-green-400">YES ${yesPct}%</span>
+                  <span class="text-red-400">NO ${noPct}%</span>
+                </div>
+                <div class="h-2 rounded-full bg-neutral-800 flex overflow-hidden">
+                  <div class="pool-yes h-full" style="width: ${yesPct}%"></div>
+                  <div class="pool-no h-full" style="width: ${noPct}%"></div>
+                </div>
+                <div class="flex justify-between text-xs mt-1 text-neutral-500">
+                  <span>${ethers.formatEther(m.yesPool)} LAVAN</span>
+                  <span>${ethers.formatEther(m.noPool)} LAVAN</span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center text-xs text-neutral-500">
+                <span>Resolves: ${resDate}</span>
+                <span>Creator: ${m.creator.slice(0,6)}...${m.creator.slice(-4)}</span>
+              </div>
+              ${m.status == 0 ? `
+              <div class="mt-4 flex gap-2">
+                <input type="number" id="stake-amount-${i}" value="1" min="1" class="bg-neutral-900 border border-neutral-700 rounded px-3 py-1 text-sm w-24">
+                <button onclick="stakeOnMarket(${i}, 0)" class="btn-secondary px-3 py-1 rounded text-xs text-green-400">Stake YES</button>
+                <button onclick="stakeOnMarket(${i}, 1)" class="btn-secondary px-3 py-1 rounded text-xs text-red-400">Stake NO</button>
+              </div>` : ''}
+            </div>`;
+        }
+        document.getElementById('markets-list').innerHTML = html;
+      } catch(e) {
+        console.error(e);
+        document.getElementById('markets-list').innerHTML = `<div class="card p-6 text-center text-red-400">Error loading: ${e.message}</div>`;
+      }
+    }
+
+    async function createMarket() {
+      if (!signer) { alert('Connect wallet first'); return; }
+      const question = document.getElementById('create-question').value;
+      const days = parseInt(document.getElementById('create-days').value);
+      const position = parseInt(document.getElementById('create-position').value);
+      const stakeAmount = document.getElementById('create-stake').value;
+      
+      if (!question) { alert('Enter a proposition'); return; }
+      
+      const resolutionTime = Math.floor(Date.now()/1000) + (days * 86400);
+      const amount = ethers.parseEther(stakeAmount);
+
+      try {
+        // Approve token spend
+        const allowance = await tokenContract.allowance(await signer.getAddress(), MARKET_ADDRESS);
+        if (allowance < amount) {
+          const tx = await tokenContract.approve(MARKET_ADDRESS, ethers.MaxUint256);
+          await tx.wait();
+        }
+        const tx = await marketContract.createMarket(question, resolutionTime, position, amount);
+        await tx.wait();
+        alert('Market created!');
+        loadMarkets();
+      } catch(e) { console.error(e); alert('Error: ' + e.message); }
+    }
+
+    async function stakeOnMarket(marketId, position) {
+      if (!signer) { alert('Connect wallet first'); return; }
+      const amount = ethers.parseEther(document.getElementById(`stake-amount-${marketId}`).value);
+      try {
+        const allowance = await tokenContract.allowance(await signer.getAddress(), MARKET_ADDRESS);
+        if (allowance < amount) {
+          const tx = await tokenContract.approve(MARKET_ADDRESS, ethers.MaxUint256);
+          await tx.wait();
+        }
+        const tx = await marketContract.stake(marketId, position, amount);
+        await tx.wait();
+        alert('Staked!');
+        loadMarkets();
+      } catch(e) { console.error(e); alert('Error: ' + e.message); }
+    }
+
+    // Load on page ready
+    loadMarkets();
+  </script>
+</body>
+</html>
