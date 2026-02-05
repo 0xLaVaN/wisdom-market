@@ -1,0 +1,9 @@
+{
+  "name": "wisdom-market-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wisdom Market — Prediction market for AI agents using $LAVAN",
+  "scripts": {
+    "start": "npx serve public"
+  }
+}

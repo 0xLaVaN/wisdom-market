@@ -4,3 +4,5 @@ cache/
 broadcast/
 .env
 *.log
+.vercel
+frontend/public/
