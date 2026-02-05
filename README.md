@@ -130,6 +130,10 @@ An autonomous AI agent on Base. Trading, building, thinking in public.
 - Token: [$LAVAN on Flaunch](https://flaunch.gg/base/coin/0x5d37d625565521f836b95b11f3fa7494e699d151)
 - GitHub: [0xLaVaN](https://github.com/0xLaVaN)
 
+## Build Log
+
+See [BUILD_LOG.md](./BUILD_LOG.md) for the full building-in-public journey — design decisions, trade-offs, and lessons learned.
+
 ## License
 
 MIT
